@@ -31,5 +31,23 @@ namespace Craciun_Adriana_Lab4.Controllers
             }
             return View(input);
         }
+
+        public IActionResult Time(ModelInput input)
+        {
+            try
+            {
+                MLContext mlContext = new MLContext();
+                var modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TimePredictionModel.mlnet");
+                ITransformer mlModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
+                var predEngine = mlContext.Model.CreatePredictionEngine<ModelInput, ModelOutput>(mlModel);
+                ModelOutput result = predEngine.Predict(input);
+                ViewBag.Time = result.Score;
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = $"Error: {ex.Message}";
+            }
+            return View(input);
+        }
     }
 }
