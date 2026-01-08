@@ -1,4 +1,6 @@
-﻿namespace Craciun_Adriana_Lab4.Data
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Craciun_Adriana_Lab4.Data
 {
     public class AppDbContext: Microsoft.EntityFrameworkCore.DbContext
     {

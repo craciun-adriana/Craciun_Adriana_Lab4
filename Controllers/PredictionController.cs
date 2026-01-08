@@ -2,6 +2,8 @@
 using Microsoft.ML;
 using static Craciun_Adriana_Lab4.PricePredictionModel;
 using System.IO;
+using Craciun_Adriana_Lab4.Models;
+using System.Threading.Tasks;
 
 namespace Craciun_Adriana_Lab4.Controllers
 {
@@ -14,7 +16,7 @@ namespace Craciun_Adriana_Lab4.Controllers
         }
 
         [HttpPost]
-        public IActionResult Price(ModelInput input)
+        public async Task<IActionResult> Price(ModelInput input)
         {
             try
             {
@@ -29,6 +31,18 @@ namespace Craciun_Adriana_Lab4.Controllers
             {
                 ViewBag.Error = $"Error: {ex.Message}";
             }
+
+            var history = new PredictionHistory
+            {
+                PassengerCount = input.Passenger_count,
+                TripTimeInSecs = input.Trip_time_in_secs,
+                TripDistance = input.Trip_distance,
+                PaymentType = input.Payment_type,
+                PredictedPrice = ViewBag.Price,
+                CreatedAt = DateTime.Now
+            };
+            _context.PredictionHistories.Add(history);
+            await _context.SaveChangesAsync();
             return View(input);
         }
 
@@ -48,6 +62,13 @@ namespace Craciun_Adriana_Lab4.Controllers
                 ViewBag.Error = $"Error: {ex.Message}";
             }
             return View(input);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> History()
+        {
+            var histories = await _context.PredictionHistories.OrderByDescending(h => h.CreatedAt).ToList();
+            return View(histories);
         }
     }
 }
