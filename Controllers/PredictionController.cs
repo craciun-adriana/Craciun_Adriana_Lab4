@@ -3,12 +3,20 @@ using Microsoft.ML;
 using static Craciun_Adriana_Lab4.PricePredictionModel;
 using System.IO;
 using Craciun_Adriana_Lab4.Models;
+using Craciun_Adriana_Lab4.Data;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Craciun_Adriana_Lab4.Controllers
 {
     public class PredictionController : Controller
     {
+        private readonly AppDbContext _context;
+        public PredictionController(AppDbContext context)
+        {
+            _context = context;
+        }
+
         [HttpGet]
         public IActionResult Price()
         {
@@ -67,7 +75,7 @@ namespace Craciun_Adriana_Lab4.Controllers
         [HttpGet]
         public async Task<IActionResult> History()
         {
-            var histories = await _context.PredictionHistories.OrderByDescending(h => h.CreatedAt).ToList();
+            var histories = await _context.PredictionHistories.OrderByDescending(h => h.CreatedAt).ToListAsync();
             return View(histories);
         }
     }
