@@ -73,10 +73,48 @@ namespace Craciun_Adriana_Lab4.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> History()
+        public async Task<IActionResult> History( string? paymentType, float? minPrice, float? maxPrice, string? sortOrder, string? sortTime)
         {
-            var histories = await _context.PredictionHistories.OrderByDescending(h => h.CreatedAt).ToListAsync();
-            return View(histories);
+            var query = _context.PredictionHistories.AsQueryable();
+
+            if (!string.IsNullOrEmpty(paymentType)) 
+            { 
+                query = query.Where(p => p.PaymentType.ToLower() == paymentType.ToLower()); 
+            }
+
+            if (minPrice.HasValue) 
+            {  
+                query = query.Where(p => p.PredictedPrice >= minPrice.Value); 
+            }
+
+            if (maxPrice.HasValue) 
+            {  
+                query = query.Where(p => p.PredictedPrice <= maxPrice.Value); 
+            }
+
+            query = sortOrder switch
+            {
+            "price_asc" => query.OrderBy(p => p.PredictedPrice),
+            "price_desc" => query.OrderByDescending(p => p.PredictedPrice),
+            _ => query.OrderBy(p => p.PredictedPrice) //sortare default
+            };
+
+            query = sortTime switch
+            {
+                "time_asc" => query.OrderBy(p => p.CreatedAt),
+                "time_desc" => query.OrderByDescending(p => p.CreatedAt),
+                _ => query.OrderBy(p => p.CreatedAt) //sortare default
+            };
+
+            ViewBag.CurrentPaymentType = paymentType; 
+            ViewBag.CurrentMinPrice = minPrice; 
+            ViewBag.CurrentMaxPrice = maxPrice;
+            ViewBag.CurrentSortOrder = sortOrder;
+            ViewBag.CurrentSortTime = sortTime;
+
+            var result = await query.ToListAsync();
+      
+            return View(result);
         }
     }
 }
