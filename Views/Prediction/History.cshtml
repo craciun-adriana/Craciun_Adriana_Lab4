@@ -22,7 +22,28 @@
                 <td>@item.TripTimeInSecs</td>
                 <td>@item.PaymentType</td>
                 <td>@item.PredictedPrice</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="deletePrediction(@item.Id)">Delete</button>
+                </td>
             </tr>
         }
     </tbody>
 </table>
+<script>
+    function deletePrediction(id) {
+        if (confirm('Are you sure you want to delete this prediction?')) {
+            fetch(`/api/predictionapi/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Prediction deleted successfully.');
+                    location.reload();
+                } else {
+                    alert(`Failed to delete prediction. Response ${JSON.stringify(response)}`);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+</script>
