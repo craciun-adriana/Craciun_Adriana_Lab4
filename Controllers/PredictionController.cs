@@ -73,30 +73,30 @@ namespace Craciun_Adriana_Lab4.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> History( string? paymentType, float? minPrice, float? maxPrice, string? sortOrder, string? sortTime)
+        public async Task<IActionResult> History(string? paymentType, float? minPrice, float? maxPrice, string? sortOrder, string? sortTime)
         {
             var query = _context.PredictionHistories.AsQueryable();
 
-            if (!string.IsNullOrEmpty(paymentType)) 
-            { 
-                query = query.Where(p => p.PaymentType.ToLower() == paymentType.ToLower()); 
+            if (!string.IsNullOrEmpty(paymentType))
+            {
+                query = query.Where(p => p.PaymentType.ToLower() == paymentType.ToLower());
             }
 
-            if (minPrice.HasValue) 
-            {  
-                query = query.Where(p => p.PredictedPrice >= minPrice.Value); 
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.PredictedPrice >= minPrice.Value);
             }
 
-            if (maxPrice.HasValue) 
-            {  
-                query = query.Where(p => p.PredictedPrice <= maxPrice.Value); 
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.PredictedPrice <= maxPrice.Value);
             }
 
             query = sortOrder switch
             {
-            "price_asc" => query.OrderBy(p => p.PredictedPrice),
-            "price_desc" => query.OrderByDescending(p => p.PredictedPrice),
-            _ => query.OrderBy(p => p.PredictedPrice) //sortare default
+                "price_asc" => query.OrderBy(p => p.PredictedPrice),
+                "price_desc" => query.OrderByDescending(p => p.PredictedPrice),
+                _ => query.OrderBy(p => p.PredictedPrice) //sortare default
             };
 
             query = sortTime switch
@@ -106,15 +106,72 @@ namespace Craciun_Adriana_Lab4.Controllers
                 _ => query.OrderBy(p => p.CreatedAt) //sortare default
             };
 
-            ViewBag.CurrentPaymentType = paymentType; 
-            ViewBag.CurrentMinPrice = minPrice; 
+            ViewBag.CurrentPaymentType = paymentType;
+            ViewBag.CurrentMinPrice = minPrice;
             ViewBag.CurrentMaxPrice = maxPrice;
             ViewBag.CurrentSortOrder = sortOrder;
             ViewBag.CurrentSortTime = sortTime;
 
             var result = await query.ToListAsync();
-      
+
             return View(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Dashboard()
+        {
+            // 1. Numărul total de predicții
+            var totalPredictions = await _context.PredictionHistories.CountAsync();
+
+            // 2. Preț mediu per tip de plată + număr de predicții per tip
+            var paymentTypeStats = await _context.PredictionHistories.
+                GroupBy(p => p.PaymentType)
+                .Select(g => new PaymentTypeStat
+                {
+                    PaymentType = g.Key,
+                    AveragePrice = g.Average(x => x.PredictedPrice),
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            // 3. Distribuția prețurilor pe intervale (buckets)         
+            // Definim intervalele: 0-10, 10-20, 20-30, 30-50, >50 (exemplu)
+            var allPredictions = await _context.PredictionHistories
+                .Select(p => p.PredictedPrice)
+                .ToListAsync();
+
+            var buckets = new List<PriceBucketStat>
+            {
+                new PriceBucketStat { Label = "0 - 10" },
+                new PriceBucketStat { Label = "10 - 20" },
+                new PriceBucketStat { Label = "20 - 30" },
+                new PriceBucketStat { Label = "30 - 50" },
+                new PriceBucketStat { Label = "> 50" }
+            };
+
+            foreach (var price in allPredictions)
+            {
+                if (price < 10)
+                    buckets[0].Count++;
+                else if (price < 20)
+                    buckets[1].Count++;
+                else if (price < 30)
+                    buckets[2].Count++;
+                else if (price < 50)
+                    buckets[3].Count++;
+                else
+                    buckets[4].Count++;
+            }
+
+            // 4. Construim ViewModel-ul
+            var vm = new DashboardViewModel
+            {
+                TotalPredictions = totalPredictions,
+                PaymentTypeStats = paymentTypeStats,
+                PriceBuckets = buckets
+            };
+
+            return View(vm);
         }
     }
 }
