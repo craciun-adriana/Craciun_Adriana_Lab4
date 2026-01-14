@@ -9,6 +9,6 @@
         public List<PriceBucketStat> PriceBuckets { get; set; } = new();
 
         public DateTime? fromDate { get; set; }
-        public DateTime? toDate { get; set}
+        public DateTime? toDate { get; set; }
     }
 }

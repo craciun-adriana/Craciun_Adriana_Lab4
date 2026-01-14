@@ -118,7 +118,7 @@ namespace Craciun_Adriana_Lab4.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(DateTime? fromDate, DateTime? toDate)
         {
 
             var query = _context.PredictionHistories.AsQueryable();
@@ -135,10 +135,10 @@ namespace Craciun_Adriana_Lab4.Controllers
 
 
             // 1. Numărul total de predicții
-            var totalPredictions = await _context.PredictionHistories.CountAsync();
+            var totalPredictions = await query.CountAsync();
 
             // 2. Preț mediu per tip de plată + număr de predicții per tip
-            var paymentTypeStats = await _context.PredictionHistories.
+            var paymentTypeStats = await query.
                 GroupBy(p => p.PaymentType)
                 .Select(g => new PaymentTypeStat
                 {
@@ -150,7 +150,7 @@ namespace Craciun_Adriana_Lab4.Controllers
 
             // 3. Distribuția prețurilor pe intervale (buckets)         
             // Definim intervalele: 0-10, 10-20, 20-30, 30-50, >50 (exemplu)
-            var allPredictions = await _context.PredictionHistories
+            var allPredictions = await query
                 .Select(p => p.PredictedPrice)
                 .ToListAsync();
 

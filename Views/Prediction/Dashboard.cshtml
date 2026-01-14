@@ -7,6 +7,22 @@
 
 <h2>Dashboard predicții</h2>
 
+<form method="get" asp-action="Dashboard" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">De la data</label>
+        <input type="date" name="fromDate" class="form-control"
+               value="@(Model.fromDate?.ToString("yyyy-MM-dd") ?? "")" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Până la data</label>
+        <input type="date" name="toDate" class="form-control"
+               value="@(Model.toDate?.ToString("yyyy-MM-dd") ?? "")" />
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-primary w-100">Filtrează</button>
+    </div>
+</form>
+
 <div class="row mb-4">     
     <!-- Card: Total predicții -->     
     <div class="col-md-4">         
