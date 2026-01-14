@@ -120,6 +120,20 @@ namespace Craciun_Adriana_Lab4.Controllers
         [HttpGet]
         public async Task<IActionResult> Dashboard()
         {
+
+            var query = _context.PredictionHistories.AsQueryable();
+
+            if ( fromDate.HasValue)
+            {                 
+                query = query.Where(p => p.CreatedAt.Date >= fromDate.Value.Date);
+            }
+
+            if ( toDate.HasValue)
+            {                 
+                query = query.Where(p => p.CreatedAt.Date <= toDate.Value.Date);
+            }
+
+
             // 1. Numărul total de predicții
             var totalPredictions = await _context.PredictionHistories.CountAsync();
 
