@@ -1,4 +1,5 @@
-﻿@model BatchPredictionViewModel
+﻿@using System.Text.RegularExpressions
+@model BatchPredictionViewModel
 @{
 ViewData["Title"] = "Batch prediction (CSV)";
 }
@@ -41,7 +42,7 @@ ViewData["Title"] = "Batch prediction (CSV)";
                 <tr>
                     <td>@p.Passenger_count</td>
                     <td>@p.Trip_distance</td>
-                    <td>@p.Trip_time_in_secs.</td>
+                    <td>@((Convert.ToDouble(p.Trip_time_in_secs) / 60).ToString("0.00"))</td>
                     <td>@p.Score</td>
                 </tr>
             }
